@@ -81,7 +81,7 @@
                 }
             }
         },
-        "/user/findByID": {
+        "/user/{id}": {
             "get": {
                 "summary": "Finds users by id",
                 "description": "",
@@ -115,7 +115,7 @@
                 }
             }
         },
-        "/user/tasks": {
+        "/user/{id}/tasks": {
             "get": {
                 "summary": "Get all the tasks for a user",
                 "description": "",
@@ -135,7 +135,7 @@
                 }
             }
         },
-        "/user/tasks/{taskID}": {
+        "/user/{id}/tasks/{taskID}": {
             "get": {
                 "summary": "Find task by ID",
                 "description": "Returns a single task",
