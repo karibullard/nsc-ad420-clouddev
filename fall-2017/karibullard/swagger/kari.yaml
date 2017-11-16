@@ -16,37 +16,29 @@ tags:
 schemes:
   - http
 paths:
-  /user:
+  /users:
     get:
       tags:
         - users
-      summary: Get user by name
-      description: ''
-      operationId: getUser
+      summary: Get all users
+      description: Returns all users in the system
+      operationId: getAllUsers
       produces:
         - application/json
-      parameters:
-        - name: userName
-          in: query
-          description: name of user to get
-          required: false
-          type: string
       responses:
         '200':
-          description: user found
+          description: all users returned successfully
           schema:
             type: array
             items:
               $ref: '#/definitions/User'
-        '400':
-          description: invalid input
-        '404':
-          description: users not found
+        '503':
+          description: server error - unable to return all users
     post:
       tags:
         - users
-      summary: Add user
-      description: Adds a new user
+      summary: Add a new user
+      description: Adds a new user to the system
       operationId: addUser
       consumes:
         - application/json
@@ -55,16 +47,20 @@ paths:
       parameters:
         - in: body
           name: newUser
-          description: new user to be added
-          required: false
+          description: user object to be added
+          required: true
           schema:
             $ref: '#/definitions/User'
       responses:
         '200':
           description: successfully added new user
+          schema:
+            type: integer
         '400':
           description: invalid input
-  '/users/{id}':
+        '503':
+          description: server error - unable to add new user
+  '/users/{userID}':
     get:
       tags:
         - users
@@ -74,9 +70,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: id
+        - name: userID
           in: path
-          description: id to look up
+          description: id of user
           required: true
           type: integer
       responses:
@@ -91,7 +87,7 @@ paths:
     put:
       tags:
         - users
-      summary: Update user
+      summary: Update a user
       description: ''
       operationId: updateUser
       consumes:
@@ -99,65 +95,55 @@ paths:
       produces:
         - application/json
       parameters:
-        - in: body
-          name: updatesForUser
-          description: update user
+        - name: userID
+          in: path
+          description: id of user
+          required: true
+          type: integer
+        - name: user
+          in: body
+          description: id of user
           required: true
           schema:
             $ref: '#/definitions/User'
       responses:
-        '201':
-          description: user updated
-        '400':
-          description: invalid ID
+        '200':
+          description: user updated successfully
         '404':
-          description: user not found
+          description: unable to find user
+        '405':
+          description: invalid input
     delete:
       tags:
         - users
       summary: Delete user
       description: delete user
       operationId: deleteUser
-      produces:
-        - application/json
       parameters:
-        - name: id
-          in: header
-          required: false
-          type: string
-        - name: id
+        - name: userID
           in: path
-          description: ID of user to delete
           required: true
           type: integer
-          format: int64
       responses:
         '200':
           description: user deleted
-        '400':
-          description: invalid input
         '404':
           description: user not found
-  '/users/{id}/tasks':
+  '/users/{userID}/tasks':
     get:
       tags:
         - tasks
-      summary: User tasks
+      summary: Get all tasks for user
       description: ''
-      operationId: userTasks
+      operationId: getAllTasks
       produces:
         - application/json
       parameters:
-        - name: id
+        - name: userID
           in: path
-          description: ''
+          description: ID for user whose tasks you want
           required: true
           type: integer
-        - name: taskName
-          in: query
-          description: ''
-          required: false
-          type: string
       responses:
         '200':
           description: found task
@@ -165,8 +151,6 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Task'
-        '400':
-          description: invalid input
         '404':
           description: task not found
     post:
@@ -177,119 +161,118 @@ paths:
       operationId: addTask
       consumes:
         - application/json
-      produces:
-        - application/json
       parameters:
+        - in: path
+          name: userID
+          description: id of user
+          required: true
+          type: integer
         - in: body
-          name: newTask
+          name: tasks
           description: task to be added
-          required: false
+          required: true
           schema:
             $ref: '#/definitions/Task'
       responses:
-        '201':
-          description: task created
-        '400':
+        '200':
+          description: task added successfully
+        '404':
+          description: unable to find user
+        '405':
           description: invalid input
   '/users/{userID}/tasks/{taskID}':
     get:
       tags:
         - tasks
-      summary: Get task by ID
+      summary: Get a single task
       description: ''
-      operationId: getTask
+      operationId: getTaskByID
       produces:
         - application/json
       parameters:
         - name: userID
           in: path
-          description: task ID
+          description: user ID
           required: true
           type: integer
         - name: taskID
-          in: query
-          description: find user task by id
-          required: false
-          type: string
+          in: path
+          description: task ID
+          required: true
+          type: integer
       responses:
         '200':
-          description: found user task
+          description: task object
           schema:
             $ref: '#/definitions/Task'
-        '400':
-          description: invalid input
         '404':
-          description: task not found
+          description: invalid input
     put:
       tags:
         - tasks
       summary: Update a task
-      description: ''
+      description: Update a user task
       operationId: updateTask
       consumes:
         - application/json
-      produces:
-        - application/json
       parameters:
+        - in: path
+          name: userID
+          description: User ID
+          required: true
+          type: integer
+        - in: path
+          name: taskID
+          description: Task ID
+          required: true
+          type: integer
         - in: body
-          name: updateTask
-          description: task to update
+          name: task
+          description: the updated task object
           required: true
           schema:
             $ref: '#/definitions/Task'
       responses:
         '201':
           description: task updated
-        '400':
-          description: invalid input
         '404':
+          description: invalid input
+        '405':
           description: task not found
     delete:
       tags:
         - tasks
       summary: Delete a task
-      description: ''
+      description: Delete a user's task
       operationId: deleteTask
-      produces:
-        - application/json
       parameters:
-        - name: api_key
-          in: header
-          required: false
-          type: string
         - name: userID
           in: path
-          description: id of owner of task
+          description: user id for task owner
           required: true
           type: integer
-          format: int64
+          format: int32
         - name: taskID
           in: path
           description: id of task
           required: true
           type: integer
-          format: int64
+          format: int32
       responses:
         '200':
           description: task deleted
         '400':
           description: invalid input
-        '404':
-          description: task not found
 definitions:
   User:
     type: object
     required:
-      - id
-      - name
+      - userID
     properties:
-      id:
+      userID:
         type: integer
-        format: int64
+        format: int32
         example: 1
-      name:
-        type: string
-        example: kbullard
       firstName:
         type: string
         example: Kari
@@ -299,19 +282,27 @@ definitions:
       tasks:
         type: array
         items:
-          $ref: '#/definitions/User'
+          type: integer
+          format: Int32
   Task:
+    type: object
     required:
       - taskId
-      - taskName
     properties:
       taskId:
         type: integer
-        format: int64
+        format: int32
         example: 1
-      taskName:
+      dueDate:
+        type: string
+        format: date
+      title:
         type: string
         example: Do some HW
-      complete:
+      status:
         type: boolean
         default: false
+      userID:
+        type: integer
+        format: int64
+        example: kbullard
